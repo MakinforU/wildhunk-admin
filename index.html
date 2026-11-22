@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://dgzakcwgfxwudkejtviv.supabase.co https://wildhunk.com https://*.wildhunk.com https://makinforu.github.io; media-src 'self' blob:; connect-src 'self' https://dgzakcwgfxwudkejtviv.supabase.co wss://dgzakcwgfxwudkejtviv.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Wild hunk Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f2ec;--card:#fffdf9;--ink:#16110e;--muted:#6f655c;--line:#e4dcd1;--accent:#a07a4f;--accent2:#c9a67a;--ok:#2f6b3d;--bad:#a2382b;--side:#16110e;--sideink:#e9e1d6}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Jost,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14.5px;line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:inherit}
+.hidden{display:none!important}
+/* auth */
+.auth{min-height:100vh;display:grid;place-items:center;padding:16px}
+.auth .box{width:100%;max-width:380px;background:var(--card);border:1px solid var(--line);padding:32px 28px}
+.logo{font-weight:300;font-size:26px;letter-spacing:.02em;text-decoration:none}
+.logo span{font-weight:600;color:var(--accent)}
+.auth h1{font-weight:400;font-size:18px;margin:18px 0 4px}
+.auth p{color:var(--muted);margin:0 0 18px}
+label{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+label>input,label>select,label>textarea{display:block;width:100%;margin-top:5px;text-transform:none;letter-spacing:0;font-size:14.5px;color:var(--ink)}
+input,select,textarea{border:1px solid var(--line);background:#fff;padding:9px 11px;border-radius:0;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:70px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--ink);color:#fff;border:1px solid var(--ink);padding:9px 18px;cursor:pointer;letter-spacing:.04em;font-size:13.5px}
+.btn:hover{background:#3a2c22}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:#efe7dc}
+.btn.danger{background:transparent;color:var(--bad);border-color:#e3c2bc}
+.btn.danger:hover{background:#f8e9e6}
+.btn.sm{padding:5px 11px;font-size:12.5px}
+.btn:disabled{opacity:.5;cursor:default}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);cursor:pointer;text-decoration:underline}
+.msg{font-size:13px;margin-top:10px;min-height:18px}
+.msg.err{color:var(--bad)}.msg.ok{color:var(--ok)}
+/* layout */
+.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+.side{background:var(--side);color:var(--sideink);padding:22px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column}
+.side .logo{color:#fff;padding:0 10px 18px;display:block}
+.side nav{display:flex;flex-direction:column;gap:2px;flex:1}
+.side nav button{background:none;border:0;color:var(--sideink);text-align:left;padding:9px 12px;cursor:pointer;font-size:14px;letter-spacing:.02em}
+.side nav button:hover{background:#2a201a}
+.side nav button.on{background:#2f241c;color:#fff;box-shadow:inset 3px 0 0 var(--accent2)}
+.side .me{font-size:12px;color:#a59a8d;padding:10px 12px;border-top:1px solid #2f241c;word-break:break-all}
+.side .me button{margin-top:6px;background:none;border:1px solid #4a3c31;color:var(--sideink);padding:5px 10px;cursor:pointer;font-size:12px}
+.main{padding:26px 30px 60px;min-width:0}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.top h2{font-weight:400;font-size:24px;margin:0;letter-spacing:.01em}
+.top .acts{display:flex;gap:8px;flex-wrap:wrap}
+.card{background:var(--card);border:1px solid var(--line);padding:18px 20px;margin-bottom:16px}
+.card h3{margin:0 0 12px;font-weight:500;font-size:15px;letter-spacing:.04em;text-transform:uppercase}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);padding:16px 18px}
+.stat small{display:block;color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.stat b{display:block;font-size:26px;font-weight:400;margin-top:4px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line)}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:500;background:#faf6f0}
+tr:last-child td{border-bottom:0}
+td .th{width:46px;height:56px;object-fit:cover;background:#eee6db;display:block}
+.tablewrap{overflow-x:auto}
+#appView>*{min-width:0}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;background:#efe7dc}
+.pill.on{background:#e2eedf;color:var(--ok)}.pill.off{background:#f3e3e0;color:var(--bad)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.toolbar input,.toolbar select{min-width:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:0 16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:0 16px}
+.chk{display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink)}
+.chk input{width:auto;margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chips button{border:1px solid var(--line);background:#fff;padding:5px 11px;cursor:pointer;font-size:13px}
+.chips button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.chips button.so{background:#f3e3e0;color:var(--bad);border-color:#e3c2bc;text-decoration:line-through}
+.imgs{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.imgs .im{position:relative;width:96px;height:120px;background:#eee6db;border:1px solid var(--line)}
+.imgs .im img{width:100%;height:100%;object-fit:cover;display:block}
+.imgs .im .ctl{position:absolute;inset:auto 0 0 0;display:flex;justify-content:space-between;background:rgba(22,17,14,.75)}
+.imgs .im .ctl button{background:none;border:0;color:#fff;cursor:pointer;padding:3px 7px;font-size:13px}
+.imgs .im .first{position:absolute;top:4px;left:4px;background:var(--accent);color:#fff;font-size:10.5px;padding:1px 6px;letter-spacing:.05em}
+.imgs .add{width:96px;height:120px;border:1px dashed var(--accent);display:grid;place-items:center;text-align:center;color:var(--accent);cursor:pointer;font-size:12.5px;padding:6px;background:#fffaf3}
+.hint{font-size:12.5px;color:var(--muted);margin:-6px 0 12px}
+.modal{position:fixed;inset:0;background:rgba(22,17,14,.45);display:flex;justify-content:flex-end;z-index:20}
+.modal .panel{background:var(--bg);width:min(760px,100%);height:100%;overflow:auto;padding:22px 24px 90px}
+.modal .panel h3{font-weight:400;font-size:21px;margin:0 0 16px}
+.modal .foot{position:sticky;bottom:-90px;margin:16px -24px -90px;padding:14px 24px;background:var(--card);border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.price-note{font-size:13px;color:var(--ok);margin:-4px 0 12px}
+.rowitem{border:1px solid var(--line);background:#fff;padding:14px 14px 4px;margin-bottom:10px;position:relative}
+.rowitem .rm{position:absolute;top:8px;right:8px}
+.rowitem .mv{position:absolute;top:8px;right:84px;display:flex;gap:4px}
+.thumbpick{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+.thumbpick img{width:84px;height:84px;object-fit:cover;background:#eee6db;border:1px solid var(--line)}
+.thumbpick .tp{flex:1;min-width:0}
+.media{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+.media .m{background:var(--card);border:1px solid var(--line)}
+.media .m img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block;background:#eee6db}
+.media .m div{padding:7px 8px;font-size:12px;display:flex;gap:6px;justify-content:space-between;align-items:center}
+.media .m span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pwm{position:fixed;inset:0;z-index:60;background:rgba(15,11,9,.6);display:grid;place-items:center;padding:16px}.pwm form{background:var(--card);padding:24px;width:min(400px,100%);display:grid;gap:12px}.pwm h3{margin:0}.pwm input{width:100%;padding:10px;border:1px solid var(--line);font:inherit}.pwm .acts{display:flex;gap:10px;justify-content:flex-end}
+.pwwarn{background:#fbeee0;border:1px solid #e7c9a4;padding:12px 16px;margin:0 0 16px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 18px;opacity:0;transition:.25s;z-index:50;pointer-events:none;max-width:90vw}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.toast.err{background:var(--bad)}
+.mobilebar{display:none}
+.order-items div{display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-bottom:1px dashed var(--line)}
+.empty{padding:30px;text-align:center;color:var(--muted)}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.rank{display:flex;flex-direction:column}
+.rk{display:grid;grid-template-columns:22px 40px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);text-decoration:none}
+.rk:last-child{border-bottom:0}
+.rk:hover .t{color:var(--accent)}
+.rk .n{color:var(--muted);font-size:12px}
+.rk img{width:40px;height:48px;object-fit:cover;background:#eee6db}
+.rk .t{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.rk .t small,.rk .v small{display:block;font-size:12px;color:var(--muted)}
+.rk .v{text-align:right;font-weight:500;white-space:nowrap}
+.bars{display:flex;align-items:flex-end;gap:6px;height:140px;padding-top:6px}
+.bars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px;min-width:0}
+.bars i{display:block;width:100%;max-width:34px;background:var(--accent);border-radius:2px 2px 0 0}
+.bars span{font-size:10.5px;color:var(--muted)}
+@media (max-width:860px){.dgrid{grid-template-columns:1fr}}
+@media (max-width:860px){
+  .app{grid-template-columns:1fr}
+  .side{position:fixed;inset:0 auto 0 0;width:240px;z-index:30;transform:translateX(-100%);transition:.2s}
+  .side.open{transform:none}
+  .mobilebar{display:flex;align-items:center;justify-content:space-between;background:var(--side);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:10}
+  .mobilebar button{background:none;border:1px solid #4a3c31;color:#fff;padding:6px 12px}
+  .main{padding:18px 16px 60px}
+  .grid2,.grid3,.grid4{grid-template-columns:1fr}
+  .hide-m{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="auth hidden" id="authView">
+  <div class="box">
+    <span class="logo">wild<span>hunk</span></span>
+    <h1 id="authTitle">Admin sign in</h1>
+    <p id="authSub">Only store admins can open this panel.</p>
+    <form id="authForm">
+      <label>Username<input type="text" id="aEmail" required autocomplete="username" autocapitalize="none" spellcheck="false"></label>
+      <label id="pwWrap">Password<input type="password" id="aPass" required autocomplete="current-password"></label>
+      <button class="btn" style="width:100%" id="authBtn">Sign in</button>
+    </form>
+    <div class="msg" id="authMsg"></div>
+    <p class="hint" style="margin:14px 0 0;font-size:13px">Admin access only. Ask the store owner if you need to sign in.</p><span hidden><button id="toSignup"></button><button id="toReset"></button></span>
+  </div>
+</div>
+
+<div class="auth hidden" id="claimView">
+  <div class="box">
+    <span class="logo">wild<span>hunk</span></span>
+    <h1 id="claimTitle">Make this the owner account</h1>
+    <p id="claimText">No store admin exists yet. Claim the store to become its owner. After this, nobody else can claim it.</p>
+    <button class="btn" id="claimBtn" style="width:100%">Claim the store</button>
+    <div class="msg" id="claimMsg"></div>
+    <p style="margin:14px 0 0;font-size:13px"><button class="linkbtn" data-signout>Sign out</button></p>
+  </div>
+</div>
+
+<div class="app hidden" id="appView">
+  <aside class="side" id="side">
+    <a class="logo" href="https://wildhunk.com/" target="_blank" rel="noopener">wild<span>hunk</span></a>
+    <nav id="nav">
+      <button data-v="dash" class="on">Dashboard</button>
+      <button data-v="products">Products</button>
+      <button data-v="orders">Orders</button>
+      <button data-v="coupons">Coupons and discounts</button>
+      <button data-v="home">Homepage</button>
+      <button data-v="store">Store settings</button>
+      <button data-v="faqs">FAQs</button>
+      <button data-v="media">Image library</button>
+      <button data-v="admins">Admins</button>
+    </nav>
+    <div class="me"><span id="meEmail"></span><br><button id="pwBtn" type="button">Change password</button> <button data-signout>Sign out</button></div>
+  </aside>
+  <div>
+    <div class="mobilebar"><span class="logo" style="color:#fff">wild<span>hunk</span></span><button id="menuBtn">Menu</button></div>
+    <main class="main" id="main"></main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="filePick" accept="image/*" multiple hidden>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="wizard.js"></script>
+<script>
+(function(){
+var C=window.WH_CONFIG, sb=supabase.createClient(C.url,C.key);
+var CATS=['T-shirts','Shirts','Polos','Bottoms','Winterwear','Shorts','Footwear','Accessories'];
+var SIZESETS={'Clothing':['XS','S','M','L','XL','XXL','3XL'],'Footwear':['6','7','8','9','10','11','12'],'One size':['Free size'],'Waist':['28','30','32','34','36','38']};
+var BADGES=['','Best Seller','Just In','New','Sale','Limited'];
+var STATUSES=['new','confirmed','packed','shipped','delivered','cancelled','returned'];
+var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return [].slice.call((r||document).querySelectorAll(s))};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function inr(v){return '₹'+Number(v||0).toLocaleString('en-IN')}
+function toast(t,err){var el=$('#toast');el.textContent=t;el.className='toast on'+(err?' err':'');clearTimeout(toast.t);toast.t=setTimeout(function(){el.className='toast'},2600)}
+function fail(e){console.error(e);toast((e&&e.message)||'Something went wrong',true)}
+function imgUrl(u){u=u||'';return (!u||/^(https?:|data:|blob:)/.test(u))?u:"https://wildhunk.com/"+u.replace(/^\.?\//,"")}
+var main=$('#main'),user=null,settings={};
+
+// ---------- Auth ----------
+var mode='in';
+function showOnly(id){['authView','claimView','appView'].forEach(function(v){$('#'+v).classList.toggle('hidden',v!==id)})}
+function setMode(m){mode=m;$('#authMsg').textContent='';$('#authMsg').className='msg';
+  $('#pwWrap').classList.toggle('hidden',m==='reset');$('#aPass').required=m!=='reset';
+  $('#authTitle').textContent={in:'Admin sign in',up:'Create the owner account',reset:'Reset your password'}[m];
+  $('#authSub').textContent={in:'Only store admins can open this panel.',up:'Use the email you want to run the store with. You will claim the store right after.',reset:'We will email you a link to set a new password.'}[m];
+  $('#authBtn').textContent={in:'Sign in',up:'Create account',reset:'Send reset link'}[m];
+  $('#aPass').autocomplete=m==='up'?'new-password':'current-password';
+  $('#toSignup').textContent=m==='in'?'Create the owner account':'Back to sign in';
+}
+function lsGet(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function lockLeft(){var f=lsGet('wh_fail')||{n:0,until:0};return Math.max(0,Math.ceil((f.until-Date.now())/1000))}
+function failBump(){var f=lsGet('wh_fail')||{n:0,until:0};f.n++;if(f.n>=5){f.until=Date.now()+Math.min(15*60e3,60e3*Math.pow(2,f.n-5));}lsSet('wh_fail',f)}
+function failReset(){lsSet('wh_fail',{n:0,until:0})}
+function pwDialog(){var m=document.createElement('div');m.className='pwm';
+  m.innerHTML='<form><h3>Change password</h3><p class="hint" style="margin:0">Use at least 10 characters with letters, numbers and a symbol.</p><input type="password" id="pw1" placeholder="New password" autocomplete="new-password" required minlength="10"><input type="password" id="pw2" placeholder="Type it again" autocomplete="new-password" required minlength="10"><p class="msg" id="pwMsg"></p><div class="acts"><button type="button" class="btn ghost" data-x>Cancel</button><button class="btn">Save password</button></div></form>';
+  document.body.appendChild(m);var f=m.querySelector('form'),msg=m.querySelector('#pwMsg');m.querySelector('[data-x]').onclick=function(){m.remove()};
+  f.onsubmit=async function(e){e.preventDefault();var a=m.querySelector('#pw1').value,b=m.querySelector('#pw2').value;msg.className='msg err';
+    if(a!==b)return msg.textContent='The two passwords do not match.';
+    if(a.length<10||!/[a-z]/i.test(a)||!/[0-9]/.test(a)||!/[^a-z0-9]/i.test(a))return msg.textContent='Use at least 10 characters with letters, numbers and a symbol.';
+    if(/admin@?123|password|wildhunk/i.test(a))return msg.textContent='That password is too easy to guess.';
+    msg.className='msg';msg.textContent='Saving…';
+    var r=await sb.auth.updateUser({password:a,data:{pw_set:true}});
+    if(r.error){msg.className='msg err';msg.textContent=r.error.message;return}
+    m.remove();var w=document.getElementById('pwWarn');if(w)w.remove();toast('Password changed. Use it next time you sign in.')}}
+$('#pwBtn').onclick=pwDialog;
+function pwNudge(){if(user&&user.user_metadata&&user.user_metadata.pw_set)return;if(document.getElementById('pwWarn'))return;
+  var d=document.createElement('div');d.className='pwwarn';d.id='pwWarn';d.innerHTML='<span><b>You are still on the starter password.</b> Anyone who guesses it can change your store. Set a stronger one now.</span><button class="btn" type="button">Change password</button>';
+  d.querySelector('button').onclick=pwDialog;var mn=$('#main');mn.parentNode.insertBefore(d,mn)}
+$('#toSignup').onclick=function(){setMode(mode==='in'?'up':'in')};
+$('#toReset').onclick=function(){setMode('reset')};
+$('#authForm').onsubmit=async function(e){e.preventDefault();var em=$('#aEmail').value.trim().toLowerCase();if(em.indexOf('@')<0)em+='@wildhunk.com';var pw=$('#aPass').value,msg=$('#authMsg');var lk=lockLeft();if(lk>0){msg.className='msg err';msg.textContent='Too many failed attempts. Try again in '+lk+' seconds.';return}msg.className='msg';msg.textContent='Please wait…';
+  try{
+    if(mode==='in'){var r=await sb.auth.signInWithPassword({email:em,password:pw});if(r.error){failBump();throw new Error(/invalid/i.test(r.error.message)?'Wrong username or password.':r.error.message)}failReset()}
+    else if(mode==='up'){var r2=await sb.auth.signUp({email:em,password:pw,options:{emailRedirectTo:location.href.split('#')[0]}});if(r2.error)throw r2.error;
+      if(!r2.data.session){msg.className='msg ok';msg.textContent='Check your inbox and click the confirmation link, then sign in here.';return}}
+    else{var r3=await sb.auth.resetPasswordForEmail(em,{redirectTo:location.href.split('#')[0]});if(r3.error)throw r3.error;msg.className='msg ok';msg.textContent='Reset link sent. Check your inbox.';return}
+    msg.textContent='';
+  }catch(err){msg.className='msg err';msg.textContent=err.message||'Could not sign in'}
+};
+$$('[data-signout]').forEach(function(b){b.onclick=async function(){await sb.auth.signOut();location.hash='';}});
+$('#claimBtn').onclick=async function(){var r=await sb.rpc('wh_claim_admin');if(r.error)return $('#claimMsg').textContent=r.error.message;if(r.data){boot()}else{$('#claimMsg').className='msg err';$('#claimMsg').textContent='This store already has an owner. Ask them to add you as an admin.'}};
+
+async function boot(){
+  var s=(await sb.auth.getSession()).data.session;user=s&&s.user;
+  if(!user){setMode('in');if(denied){denied=false;$('#authMsg').className='msg err';$('#authMsg').textContent='This account does not have admin access.'}return showOnly('authView')}
+  var st=await sb.rpc('wh_admin_state');if(st.error){showOnly('authView');$('#authMsg').className='msg err';$('#authMsg').textContent=st.error.message;return}
+  if(!st.data.is_admin){denied=true;await sb.auth.signOut();return;
+    showOnly('claimView');
+    if(st.data.has_admin){$('#claimTitle').textContent='No admin access';$('#claimText').textContent='You are signed in as '+user.email+', but this account is not a store admin. Ask the store owner to add you under Admins.';$('#claimBtn').classList.add('hidden')}
+    else{$('#claimBtn').classList.remove('hidden')}
+    return}
+  $('#meEmail').textContent=user.email;showOnly('appView');pwNudge();await loadSettings();go(location.hash.slice(1)||'dash');
+}
+var booted=false,denied=false;
+sb.auth.onAuthStateChange(function(ev,session){
+  if(ev==='PASSWORD_RECOVERY'){var np=prompt('Enter a new password (at least 8 characters)');if(np&&np.length>=8)sb.auth.updateUser({password:np}).then(function(r){toast(r.error?r.error.message:'Password updated',!!r.error)})}
+  if(ev==='SIGNED_IN'||ev==='SIGNED_OUT'||!booted){booted=true;setTimeout(boot,0)}
+});
+
+// ---------- Nav ----------
+$('#nav').onclick=function(e){var b=e.target.closest('button');if(b){location.hash=b.dataset.v;$('#side').classList.remove('open')}};
+$('#menuBtn').onclick=function(){$('#side').classList.toggle('open')};
+window.addEventListener('hashchange',function(){if(user)go(location.hash.slice(1)||'dash')});
+var VIEWS={};
+function go(v){if(!VIEWS[v])v='dash';main.onclick=null;$$('#nav button').forEach(function(b){b.classList.toggle('on',b.dataset.v===v)});main.innerHTML='<div class="empty">Loading…</div>';VIEWS[v]().catch(fail);window.scrollTo(0,0)}
+
+// ---------- Settings helpers ----------
+async function loadSettings(){var r=await sb.from('wh_settings').select('key,value');if(r.error)throw r.error;settings={};r.data.forEach(function(x){settings[x.key]=x.value})}
+async function saveSetting(key,value){var r=await sb.from('wh_settings').upsert({key:key,value:value});if(r.error)throw r.error;settings[key]=value;toast('Saved. The live store updates on next page load.')}
+
+// ---------- Image upload ----------
+function resize(file,max){return new Promise(function(res,rej){
+  if(file.type==='image/gif')return res(file);
+  var img=new Image(),u=URL.createObjectURL(file);img.onload=function(){var w=img.width,h=img.height,s=Math.min(1,max/Math.max(w,h));
+    var c=document.createElement('canvas');c.width=Math.round(w*s);c.height=Math.round(h*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);
+    c.toBlob(function(b){b?res(b):rej(new Error('Could not read image'))},'image/jpeg',.86)};img.onerror=function(){rej(new Error('Not an image: '+file.name))};img.src=u})}
+async function uploadFiles(files,folder,max){var out=[];for(var i=0;i<files.length;i++){var f=files[i];
+  toast('Uploading '+(i+1)+' of '+files.length+'…');
+  var blob=await resize(f,max||1600),ext=blob.type==='image/gif'?'gif':'jpg';
+  var path=(folder||'uploads')+'/'+Date.now()+'-'+f.name.replace(/\.[^.]+$/,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,40)+'.'+ext;
+  var r=await sb.storage.from(C.bucket).upload(path,blob,{contentType:blob.type||'image/jpeg',cacheControl:'31536000',upsert:false});if(r.error)throw r.error;
+  out.push(sb.storage.from(C.bucket).getPublicUrl(path).data.publicUrl)}
+  toast('Uploaded');return out}
+function pickFiles(multiple){return new Promise(function(res){var fp=$('#filePick');fp.multiple=!!multiple;fp.value='';fp.onchange=function(){res([].slice.call(fp.files))};fp.click()})}
+
+// ---------- Dashboard ----------
+function rank(title,rows,empty){return '<div class="card"><h3>'+title+'</h3>'+(rows.length?'<div class="rank">'+rows.join('')+'</div>':'<div class="empty" style="padding:16px">'+empty+'</div>')+'</div>'}
+function prow(p,right,k){return '<a class="rk" href="#products" data-open="'+p.id+'"><span class="n">'+(k+1)+'</span><img src="'+esc(imgUrl(p.images[0]))+'" alt="" onerror="this.style.visibility=\'hidden\'"><span class="t">'+esc(p.title)+'<small>'+esc(p.category)+' · '+inr(p.price)+(p.mrp>p.price?' <s>'+inr(p.mrp)+'</s>':'')+'</small></span><span class="v">'+right+'</span></a>'}
+VIEWS.dash=async function(){
+  var pr=await sb.from('wh_products').select('*'),o=await sb.from('wh_orders').select('*').order('created_at',{ascending:false}).limit(1000),c=await sb.from('wh_coupons').select('*');
+  if(pr.error)throw pr.error;if(o.error)throw o.error;if(c.error)throw c.error;
+  var P=pr.data,orders=o.data,cps=c.data,byId={};P.forEach(function(p){byId[p.id]=p});
+  var good=orders.filter(function(x){return x.status!=='cancelled'&&x.status!=='returned'});
+  var live=P.filter(function(p){return p.active}).length,best=P.filter(function(p){return p.badge==='Best Seller'}).length;
+  var avg=P.length?P.reduce(function(a,p){return a+Number(p.rating)},0)/P.length:0,favs=P.reduce(function(a,p){return a+(p.favourites||0)},0);
+  var rev=good.reduce(function(a,x){return a+x.total},0),units=0,sold={},cpUse={};
+  good.forEach(function(x){x.items.forEach(function(i){units+=i.qty;var s=sold[i.id]||(sold[i.id]={id:i.id,title:i.title,units:0,rev:0});s.units+=i.qty;s.rev+=i.qty*i.price});if(x.coupon){var u=cpUse[x.coupon]||(cpUse[x.coupon]={n:0,d:0,rev:0});u.n++;u.d+=x.discount;u.rev+=x.total}});
+  var pend=orders.filter(function(x){return x.status==='new'}).length,soldOut=P.filter(function(p){return p.active&&p.sold_out_sizes.length});
+  var maxOff=P.reduce(function(a,p){return Math.max(a,p.mrp>p.price?Math.round((1-p.price/p.mrp)*100):0)},0);
+  // last 14 days
+  var days=[];for(var d=13;d>=0;d--){var dt=new Date();dt.setHours(0,0,0,0);dt.setDate(dt.getDate()-d);days.push({t:dt.getTime(),l:dt.toLocaleDateString('en-IN',{day:'numeric',month:'short'}),v:0,n:0})}
+  good.forEach(function(x){var t=new Date(x.created_at);t.setHours(0,0,0,0);days.forEach(function(dd){if(dd.t===t.getTime()){dd.v+=x.total;dd.n++}})});
+  var mx=Math.max.apply(null,days.map(function(d){return d.v}))||1;
+  function tile(l,v,s){return '<div class="stat"><small>'+l+'</small><b>'+v+'</b>'+(s?'<div class="hint" style="margin:4px 0 0">'+s+'</div>':'')+'</div>'}
+  var topSold=Object.keys(sold).map(function(k){return sold[k]}).sort(function(a,b){return b.units-a.units}).slice(0,6);
+  main.innerHTML='<div class="top"><h2>Dashboard</h2><div class="acts"><a class="btn ghost" href="https://wildhunk.com/" target="_blank" rel="noopener">View store</a><button class="btn" id="dAdd">Add product</button></div></div>'+
+   '<div class="stats">'+tile('Total products',P.length,live+' live · '+(P.length-live)+' hidden')+tile('Bestsellers',best,'Marked Best Seller')+tile('Average rating',avg.toFixed(1)+' ★',P.reduce(function(a,p){return a+p.reviews},0).toLocaleString('en-IN')+' reviews')+tile('Favourites',favs.toLocaleString('en-IN'),'Wishlist saves on the store')+tile('Biggest discount',maxOff+'%','Across all products')+'</div>'+
+   '<div class="stats">'+tile('Orders',orders.length,pend+' new to handle')+tile('Revenue',inr(rev),'Excludes cancelled and returned')+tile('Average order',inr(good.length?Math.round(rev/good.length):0),'')+tile('Units sold',units,'')+tile('Coupon savings',inr(Object.keys(cpUse).reduce(function(a,k){return a+cpUse[k].d},0)),Object.keys(cpUse).reduce(function(a,k){return a+cpUse[k].n},0)+' orders used a coupon')+'</div>'+
+   '<div class="card"><h3>Sales, last 14 days</h3><div class="bars">'+days.map(function(d){return '<div title="'+d.l+': '+inr(d.v)+' from '+d.n+' orders"><i style="height:'+Math.max(2,Math.round(d.v/mx*100))+'%"></i><span>'+d.l.split(' ')[0]+'</span></div>'}).join('')+'</div>'+(rev?'':'<p class="hint" style="margin:8px 0 0">No sales yet. Bars fill in as orders come in.</p>')+'</div>'+
+   '<div class="dgrid">'+
+     (topSold.length?rank('Best sellers by sales',topSold.map(function(s,k){var p=byId[s.id]||{id:s.id,title:s.title,images:[],category:'',price:0,mrp:0};return prow(p,s.units+' sold<small>'+inr(s.rev)+'</small>',k)}),''):rank('Best sellers',P.filter(function(p){return p.badge==='Best Seller'}).sort(function(a,b){return b.reviews-a.reviews}).slice(0,6).map(function(p,k){return prow(p,p.reviews+'<small>reviews</small>',k)}),'Mark products as Best Seller to list them here.'))+
+     rank('Top rated',P.slice().sort(function(a,b){return b.rating-a.rating||b.reviews-a.reviews}).slice(0,6).map(function(p,k){return prow(p,Number(p.rating).toFixed(1)+' ★<small>'+p.reviews+' reviews</small>',k)}),'No products yet.')+
+     rank('Most favourited',P.filter(function(p){return p.favourites>0}).sort(function(a,b){return b.favourites-a.favourites}).slice(0,6).map(function(p,k){return prow(p,'♥ '+p.favourites,k)}),'No wishlist saves yet. This fills in as shoppers tap the heart.')+
+     rank('Biggest discounts',P.filter(function(p){return p.mrp>p.price}).sort(function(a,b){return (b.mrp-b.price)/b.mrp-(a.mrp-a.price)/a.mrp}).slice(0,6).map(function(p,k){return prow(p,Math.round((1-p.price/p.mrp)*100)+'% off',k)}),'No discounted products.')+
+   '</div>'+
+   '<div class="dgrid">'+
+     '<div class="card"><h3>Coupon performance</h3>'+(cps.length?'<div class="tablewrap"><table><tr><th>Code</th><th>Used</th><th>Discount given</th><th>Sales with code</th></tr>'+cps.map(function(cp){var u=cpUse[cp.code]||{n:0,d:0,rev:0};return '<tr><td><b style="font-weight:500">'+esc(cp.code)+'</b>'+(cp.active?'':' <span class="pill off">Off</span>')+'</td><td>'+cp.used+(cp.usage_limit?' / '+cp.usage_limit:'')+'</td><td>'+inr(u.d)+'</td><td>'+inr(u.rev)+'</td></tr>'}).join('')+'</table></div>':'<div class="empty">No coupons yet.</div>')+'</div>'+
+     '<div class="card"><h3>Sold-out sizes</h3>'+(soldOut.length?'<div class="rank">'+soldOut.map(function(p,k){return prow(p,'<span style="color:var(--bad)">'+esc(p.sold_out_sizes.join(', '))+'</span>',k)}).join('')+'</div>':'<div class="empty" style="padding:16px">Every size is in stock.</div>')+'</div>'+
+   '</div>'+
+   '<div class="card"><h3>Latest orders</h3>'+(orders.length?'<div class="tablewrap"><table><tr><th>Order</th><th>Customer</th><th>Total</th><th>Status</th><th class="hide-m">Placed</th></tr>'+orders.slice(0,8).map(function(x){return '<tr><td><a href="#orders">'+esc(x.number)+'</a></td><td>'+esc(x.name)+'</td><td>'+inr(x.total)+'</td><td><span class="pill">'+x.status+'</span></td><td class="hide-m">'+new Date(x.created_at).toLocaleString('en-IN')+'</td></tr>'}).join('')+'</table></div>':'<div class="empty">No orders yet. They appear here as soon as a customer checks out.</div>')+'</div>';
+  $('#dAdd').onclick=newProduct;
+  main.onclick=function(e){var a=e.target.closest('[data-open]');if(!a)return;e.preventDefault();var p=byId[+a.dataset.open];if(p)editProduct(p)};
+};
+
+// ---------- Products ----------
+var plist=[],pfilter={q:'',cat:'',status:''};
+function isDraft(p){return !p.active&&p.attributes&&p.attributes.source==='wizard'}
+
+// ---------- AI product wizard ----------
+function mediaPath(u){var k='/storage/v1/object/public/'+C.bucket+'/',i=String(u).indexOf(k);return i<0?null:decodeURIComponent(String(u).slice(i+k.length).split('?')[0])}
+async function discardImages(urls,keepFrom){var used={};(keepFrom||[]).forEach(function(p){(p.images||[]).forEach(function(u){used[u]=1})});
+  var paths=(urls||[]).filter(function(u){return !used[u]}).map(mediaPath).filter(Boolean);if(!paths.length)return;var r=await sb.storage.from(C.bucket).remove(paths);if(r.error)throw r.error}
+var wizApi={
+  upload:function(files,folder){return uploadFiles(files,folder,1600)},
+  ai:async function(mode,payload){var r=await sb.functions.invoke('wh-ai',{body:Object.assign({mode:mode},payload||{})});
+    if(r.error){var e=new Error('The AI service could not be reached. Try again in a minute.');e.code='offline';if(mode==='status')return {ready:false};throw e}
+    if(r.data&&r.data.error){var e2=new Error(r.data.error);e2.code=r.data.code;throw e2}return r.data},
+  save:async function(row){row.attributes=Object.assign({source:'wizard'},row.attributes||{});var r=await sb.from('wh_products').insert(row).select('id').single();if(r.error)throw r.error;return r.data},
+  discard:function(urls){return discardImages(urls)},
+  toast:toast};
+function newProduct(){if(!window.WHWizard){editProduct(null);return}WHWizard.open({api:wizApi,cats:CATS,onDone:function(){if((location.hash.slice(1)||'dash')==='products')VIEWS.products()}})}
+VIEWS.products=async function(){
+  var r=await sb.from('wh_products').select('*').order('sort').order('id');if(r.error)throw r.error;plist=r.data;
+  main.innerHTML='<div class="top"><h2>Products</h2><div class="acts"><button class="btn ghost" id="bulkP">Bulk price change</button><button class="btn ghost" id="quickP">Quick add</button><button class="btn" id="addP">✦ Add product</button></div></div>'+
+    '<div class="toolbar"><input id="pq" placeholder="Search products" value="'+esc(pfilter.q)+'" style="flex:1;min-width:180px"><select id="pc"><option value="">All categories</option>'+CATS.map(function(c){return '<option'+(pfilter.cat===c?' selected':'')+'>'+c+'</option>'}).join('')+'</select><select id="ps"><option value="">Live and hidden</option><option value="1"'+(pfilter.status==='1'?' selected':'')+'>Live only</option><option value="0"'+(pfilter.status==='0'?' selected':'')+'>Hidden only</option><option value="d"'+(pfilter.status==='d'?' selected':'')+'>Drafts to review</option></select></div>'+
+    (function(){var n=plist.filter(isDraft).length;return n?'<div class="card" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 16px;border-left:3px solid var(--accent2,#c9a67a)"><span style="flex:1">'+n+' new product'+(n>1?'s are':' is')+' waiting for review. Publish, edit or reject '+(n>1?'them':'it')+'.</span><button class="btn sm" id="showDrafts">Review drafts</button></div>':''})()+
+    '<div class="tablewrap"><table id="ptable"></table></div>';
+  function draw(){var q=pfilter.q.toLowerCase(),l=plist.filter(function(p){return (!q||p.title.toLowerCase().indexOf(q)>=0)&&(!pfilter.cat||p.category===pfilter.cat)&&(pfilter.status===''||(pfilter.status==='d'?isDraft(p):String(+p.active)===pfilter.status))});
+    $('#ptable').innerHTML='<tr><th></th><th>Product</th><th class="hide-m">Category</th><th>Price</th><th class="hide-m">MRP</th><th class="hide-m">♥</th><th>Status</th><th></th></tr>'+(l.length?l.map(function(p){var off=p.mrp>p.price?Math.round((1-p.price/p.mrp)*100):0;
+      return '<tr><td><img class="th" src="'+esc(imgUrl(p.images[0]))+'" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"></td><td><b style="font-weight:500">'+esc(p.title)+'</b>'+(p.badge?' <span class="pill">'+esc(p.badge)+'</span>':'')+(p.sold_out_sizes.length?'<div style="font-size:12px;color:var(--bad)">Sold out: '+esc(p.sold_out_sizes.join(', '))+'</div>':'')+'</td><td class="hide-m">'+esc(p.category)+'</td><td>'+inr(p.price)+(off?' <small style="color:var(--ok)">'+off+'% off</small>':'')+'</td><td class="hide-m"><s style="color:var(--muted)">'+inr(p.mrp)+'</s></td><td class="hide-m">'+(p.favourites||0)+'</td><td><button class="btn sm ghost" data-tog="'+p.id+'"><span class="pill '+(p.active?'on':'off')+'">'+(p.active?'Live':'Hidden')+'</span></button></td><td style="white-space:nowrap"><button class="btn sm ghost" data-ed="'+p.id+'">Edit</button> <button class="btn sm ghost" data-dup="'+p.id+'">Copy</button> '+(isDraft(p)?'<button class="btn sm" data-pub="'+p.id+'">Publish</button> <button class="btn sm danger" data-rej="'+p.id+'">Reject</button>':'<button class="btn sm danger" data-del="'+p.id+'">Delete</button>')+'</td></tr>'}).join(''):'<tr><td colspan="8" class="empty">No products match.</td></tr>')}
+  draw();
+  if($('#showDrafts'))$('#showDrafts').onclick=function(){pfilter.status='d';VIEWS.products()};
+  $('#pq').oninput=function(){pfilter.q=this.value;draw()};$('#pc').onchange=function(){pfilter.cat=this.value;draw()};$('#ps').onchange=function(){pfilter.status=this.value;draw()};
+  $('#addP').onclick=newProduct;$('#quickP').onclick=function(){editProduct(null)};
+  $('#bulkP').onclick=bulkPrice;
+  $('#ptable').onclick=async function(e){var b=e.target.closest('button');if(!b)return;var id=+(b.dataset.ed||b.dataset.dup||b.dataset.del||b.dataset.tog||b.dataset.pub||b.dataset.rej),p=plist.filter(function(x){return x.id===id})[0];
+    try{
+    if(b.dataset.ed)editProduct(p);
+    else if(b.dataset.pub){var a=Object.assign({},p.attributes||{});delete a.source;var rp=await sb.from('wh_products').update({active:true,attributes:a}).eq('id',id);if(rp.error)throw rp.error;toast('"'+p.title+'" is live');VIEWS.products()}
+    else if(b.dataset.rej){if(!confirm('Reject "'+p.title+'"? The draft and its photos are deleted.'))return;var rr=await sb.from('wh_products').delete().eq('id',id);if(rr.error)throw rr.error;await discardImages(p.images,plist.filter(function(x){return x.id!==id})).catch(function(){});toast('Draft rejected');VIEWS.products()}
+    else if(b.dataset.dup){var c=Object.assign({},p);delete c.id;delete c.created_at;delete c.updated_at;c.title=p.title+' (copy)';c.active=false;var r=await sb.from('wh_products').insert(c);if(r.error)throw r.error;toast('Copied as a hidden product');VIEWS.products()}
+    else if(b.dataset.del){if(!confirm('Delete "'+p.title+'"? This cannot be undone. Tip: use Hide to take it off the store but keep it.'))return;var r2=await sb.from('wh_products').delete().eq('id',id);if(r2.error)throw r2.error;toast('Deleted');VIEWS.products()}
+    else if(b.dataset.tog){var r3=await sb.from('wh_products').update({active:!p.active}).eq('id',id);if(r3.error)throw r3.error;p.active=!p.active;toast(p.active?'Now live on the store':'Hidden from the store');draw()}
+    }catch(err){fail(err)}};
+};
+
+function bulkPrice(){
+  var m=document.createElement('div');m.className='modal';m.innerHTML='<div class="panel"><h3>Bulk price change</h3><p class="hint" style="margin:0 0 14px">Change selling prices for many products at once. MRP stays the same.</p>'+
+   '<label>Apply to<select id="bc"><option value="">All products</option>'+CATS.map(function(c){return '<option>'+c+'</option>'}).join('')+'</select></label>'+
+   '<div class="grid2"><label>Change<select id="bk"><option value="disc">Set discount off MRP to (%)</option><option value="pct">Raise or lower price by (%)</option><option value="flat">Raise or lower price by (₹)</option></select></label><label>Value<input id="bv" type="number" step="1" placeholder="e.g. 30 or -10"></label></div>'+
+   '<label class="chk"><input type="checkbox" id="br" checked> Round to end in 9 (₹499, ₹1,299)</label><div class="msg" id="bmsg"></div>'+
+   '<div class="foot"><button class="btn ghost" data-x>Cancel</button><button class="btn" id="bgo">Apply</button></div></div>';
+  document.body.appendChild(m);m.onclick=function(e){if(e.target===m||e.target.closest('[data-x]'))m.remove()};
+  $('#bgo',m).onclick=async function(){var v=+$('#bv',m).value,k=$('#bk',m).value,cat=$('#bc',m).value,rnd=$('#br',m).checked;if(!v&&k!=='disc')return;
+    var l=plist.filter(function(p){return !cat||p.category===cat});if(!confirm('Change prices on '+l.length+' products?'))return;
+    try{for(var i=0;i<l.length;i++){var p=l[i],np=k==='disc'?p.mrp*(100-v)/100:k==='pct'?p.price*(100+v)/100:p.price+v;np=Math.max(1,Math.round(np));if(rnd)np=Math.max(9,Math.round(np/10)*10-1);
+      $('#bmsg',m).textContent='Updating '+(i+1)+' of '+l.length+'…';var r=await sb.from('wh_products').update({price:np}).eq('id',p.id);if(r.error)throw r.error}
+      toast('Prices updated');m.remove();VIEWS.products()}catch(err){fail(err)}};
+}
+
+function editProduct(p){
+  var isNew=!p;p=p?JSON.parse(JSON.stringify(p)):{title:'',category:'T-shirts',description:'',details:[],price:0,mrp:0,images:[],sizes:['S','M','L','XL','XXL'],sold_out_sizes:[],colors:1,badge:'',rating:4.5,reviews:0,active:true,sort:plist.length};
+  var allSizes=[];Object.keys(SIZESETS).forEach(function(k){SIZESETS[k].forEach(function(s){if(allSizes.indexOf(s)<0)allSizes.push(s)})});p.sizes.forEach(function(s){if(allSizes.indexOf(s)<0)allSizes.push(s)});
+  var m=document.createElement('div');m.className='modal';
+  m.innerHTML='<div class="panel"><h3>'+(isNew?'Add product':'Edit product')+'</h3><form id="pf">'+
+    '<label>Product name<input id="f-title" required value="'+esc(p.title)+'"></label>'+
+    '<div class="grid3"><label>Category<select id="f-cat">'+CATS.concat(CATS.indexOf(p.category)<0?[p.category]:[]).map(function(c){return '<option'+(c===p.category?' selected':'')+'>'+esc(c)+'</option>'}).join('')+'</select></label>'+
+    '<label>Badge<select id="f-badge">'+BADGES.concat(BADGES.indexOf(p.badge)<0?[p.badge]:[]).map(function(b){return '<option value="'+esc(b)+'"'+(b===p.badge?' selected':'')+'>'+(b||'None')+'</option>'}).join('')+'</select></label>'+
+    '<label>Status<select id="f-active"><option value="1"'+(p.active?' selected':'')+'>Live on store</option><option value="0"'+(!p.active?' selected':'')+'>Hidden</option></select></label></div>'+
+    '<div class="grid3"><label>Selling price (₹)<input id="f-price" type="number" min="0" required value="'+p.price+'"></label><label>MRP (₹)<input id="f-mrp" type="number" min="0" required value="'+p.mrp+'"></label><label>Or set discount %<input id="f-disc" type="number" min="0" max="95" placeholder="e.g. 40"></label></div><div class="price-note" id="pnote"></div>'+
+    '<label>Photos</label><p class="hint">The first photo is the main one. Use arrows to reorder. Photos are resized automatically.</p><div class="imgs" id="f-imgs"></div>'+
+    '<label style="margin-top:12px">Or paste an image link<div style="display:flex;gap:6px;margin-top:5px"><input id="f-url" placeholder="https://… or img/p1.jpg" style="flex:1"><button type="button" class="btn ghost" id="f-addurl">Add</button></div></label>'+
+    '<label>Sizes offered</label><p class="hint">Tap to offer a size. Tap an offered size again to mark it sold out, and a third time to remove it.</p><div class="chips" id="f-sizes"></div>'+
+    '<div style="display:flex;gap:6px;margin:8px 0 14px"><input id="f-newsize" placeholder="Add a custom size" style="max-width:200px"><button type="button" class="btn ghost sm" id="f-addsize">Add size</button></div>'+
+    '<label>Description<textarea id="f-desc" rows="4" placeholder="Leave empty to use the standard text for this category">'+esc(p.description)+'</textarea></label>'+
+    '<label>Detail bullets (one per line)<textarea id="f-details" rows="3" placeholder="Fit: Oversized&#10;100% cotton, 240 GSM&#10;Made in India">'+esc((p.details||[]).join('\n'))+'</textarea></label>'+
+    '<div class="grid4"><label>Colour count<input id="f-colors" type="number" min="1" value="'+p.colors+'"></label><label>Rating<input id="f-rating" type="number" step=".1" min="0" max="5" value="'+p.rating+'"></label><label>Reviews<input id="f-reviews" type="number" min="0" value="'+p.reviews+'"></label><label>Sort order<input id="f-sort" type="number" value="'+p.sort+'"></label></div>'+
+    '<div class="foot">'+(isNew?'':'<a class="btn ghost" target="_blank" rel="noopener" href="./#p-'+p.id+'">View on store</a>')+'<button type="button" class="btn ghost" data-x>Cancel</button><button class="btn" id="f-save">'+(isNew?'Add product':'Save changes')+'</button></div></form></div>';
+  document.body.appendChild(m);
+  m.addEventListener('click',function(e){if(e.target===m||e.target.closest('[data-x]'))m.remove()});
+  function note(){var pr=+$('#f-price',m).value,mr=+$('#f-mrp',m).value;$('#pnote',m).textContent=mr>pr&&pr>0?'Customers see '+Math.round((1-pr/mr)*100)+'% off and save '+inr(mr-pr)+'.':(pr>mr&&mr?'Price is higher than MRP, so no discount shows.':'')}
+  $('#f-price',m).oninput=note;$('#f-mrp',m).oninput=note;note();
+  $('#f-disc',m).oninput=function(){var d=+this.value,mr=+$('#f-mrp',m).value;if(mr&&d>=0&&d<96){$('#f-price',m).value=Math.max(9,Math.round(mr*(100-d)/100/10)*10-1);note()}};
+  function drawImgs(){$('#f-imgs',m).innerHTML=p.images.map(function(u,k){return '<div class="im"><img src="'+esc(imgUrl(u))+'" alt="">'+(k?'':'<span class="first">MAIN</span>')+'<div class="ctl"><button type="button" data-l="'+k+'" title="Move left">←</button><button type="button" data-rm="'+k+'" title="Remove">✕</button><button type="button" data-r="'+k+'" title="Move right">→</button></div></div>'}).join('')+'<div class="add" id="f-up">+ Upload photos</div>'}
+  drawImgs();
+  $('#f-imgs',m).onclick=async function(e){var b=e.target.closest('button,#f-up');if(!b)return;
+    if(b.id==='f-up'){var fs=await pickFiles(true);if(!fs.length)return;try{var urls=await uploadFiles(fs,'products',1400);p.images=p.images.concat(urls);drawImgs()}catch(err){fail(err)}return}
+    var k;if(b.dataset.rm!=null){p.images.splice(+b.dataset.rm,1)}else if(b.dataset.l!=null){k=+b.dataset.l;if(k>0){var t=p.images[k];p.images[k]=p.images[k-1];p.images[k-1]=t}}else if(b.dataset.r!=null){k=+b.dataset.r;if(k<p.images.length-1){var t2=p.images[k];p.images[k]=p.images[k+1];p.images[k+1]=t2}}drawImgs()};
+  $('#f-addurl',m).onclick=function(){var u=$('#f-url',m).value.trim();if(u){p.images.push(u);$('#f-url',m).value='';drawImgs()}};
+  function drawSizes(){$('#f-sizes',m).innerHTML=allSizes.map(function(s){var on=p.sizes.indexOf(s)>=0,so=p.sold_out_sizes.indexOf(s)>=0;return '<button type="button" data-s="'+esc(s)+'" class="'+(so?'so':on?'on':'')+'">'+esc(s)+'</button>'}).join('')}
+  drawSizes();
+  $('#f-sizes',m).onclick=function(e){var b=e.target.closest('button');if(!b)return;var s=b.dataset.s,on=p.sizes.indexOf(s)>=0,so=p.sold_out_sizes.indexOf(s)>=0;
+    if(!on){p.sizes.push(s);p.sizes.sort(function(a,b){return allSizes.indexOf(a)-allSizes.indexOf(b)})}else if(!so){p.sold_out_sizes.push(s)}else{p.sizes.splice(p.sizes.indexOf(s),1);p.sold_out_sizes.splice(p.sold_out_sizes.indexOf(s),1)}drawSizes()};
+  $('#f-addsize',m).onclick=function(){var s=$('#f-newsize',m).value.trim();if(s&&allSizes.indexOf(s)<0){allSizes.push(s);p.sizes.push(s);$('#f-newsize',m).value='';drawSizes()}};
+  $('#pf',m).onsubmit=async function(e){e.preventDefault();
+    var row={title:$('#f-title',m).value.trim(),category:$('#f-cat',m).value,badge:$('#f-badge',m).value,active:$('#f-active',m).value==='1',price:+$('#f-price',m).value,mrp:+$('#f-mrp',m).value||+$('#f-price',m).value,
+      images:p.images,sizes:p.sizes,sold_out_sizes:p.sold_out_sizes.filter(function(s){return p.sizes.indexOf(s)>=0}),description:$('#f-desc',m).value.trim(),details:$('#f-details',m).value.split('\n').map(function(s){return s.trim()}).filter(Boolean),
+      colors:+$('#f-colors',m).value||1,rating:+$('#f-rating',m).value||0,reviews:+$('#f-reviews',m).value||0,sort:+$('#f-sort',m).value||0};
+    if(!row.sizes.length){toast('Offer at least one size',true);return}
+    if(!row.images.length&&!confirm('This product has no photo. Save anyway?'))return;
+    $('#f-save',m).disabled=true;
+    try{var r=isNew?await sb.from('wh_products').insert(row):await sb.from('wh_products').update(row).eq('id',p.id);if(r.error)throw r.error;toast(isNew?'Product added':'Saved');m.remove();VIEWS.products()}catch(err){$('#f-save',m).disabled=false;fail(err)}};
+}
+
+// ---------- Orders ----------
+var ofilter='';
+VIEWS.orders=async function(){
+  var r=await sb.from('wh_orders').select('*').order('created_at',{ascending:false}).limit(500);if(r.error)throw r.error;var list=r.data;
+  main.innerHTML='<div class="top"><h2>Orders</h2><div class="acts"><button class="btn ghost" id="ocsv">Download CSV</button></div></div><div class="toolbar"><input id="oq" placeholder="Search by order number, name or phone" style="flex:1;min-width:200px"><select id="os"><option value="">All statuses</option>'+STATUSES.map(function(s){return '<option'+(ofilter===s?' selected':'')+'>'+s+'</option>'}).join('')+'</select></div><div class="tablewrap"><table id="otable"></table></div>';
+  function draw(){var q=$('#oq').value.toLowerCase(),l=list.filter(function(o){return (!ofilter||o.status===ofilter)&&(!q||(o.number+' '+o.name+' '+o.phone).toLowerCase().indexOf(q)>=0)});
+    $('#otable').innerHTML='<tr><th>Order</th><th>Customer</th><th class="hide-m">Items</th><th>Total</th><th>Status</th><th class="hide-m">Placed</th><th></th></tr>'+(l.length?l.map(function(o){return '<tr><td><b style="font-weight:500">'+esc(o.number)+'</b><div style="font-size:12px;color:var(--muted)">'+(o.payment==='cod'?'Cash on delivery':'Prepaid')+'</div></td><td>'+esc(o.name)+'<div style="font-size:12px;color:var(--muted)">'+esc(o.phone)+'</div></td><td class="hide-m">'+o.items.reduce(function(a,i){return a+i.qty},0)+'</td><td>'+inr(o.total)+(o.coupon?'<div style="font-size:12px;color:var(--ok)">'+esc(o.coupon)+' −'+inr(o.discount)+'</div>':'')+'</td><td><select data-st="'+o.id+'">'+STATUSES.map(function(s){return '<option'+(s===o.status?' selected':'')+'>'+s+'</option>'}).join('')+'</select></td><td class="hide-m">'+new Date(o.created_at).toLocaleString('en-IN')+'</td><td><button class="btn sm ghost" data-view="'+o.id+'">View</button></td></tr>'}).join(''):'<tr><td colspan="7" class="empty">'+(list.length?'No orders match.':'No orders yet.')+'</td></tr>')}
+  draw();$('#oq').oninput=draw;$('#os').onchange=function(){ofilter=this.value;draw()};
+  $('#otable').onchange=async function(e){var s=e.target.closest('[data-st]');if(!s)return;var r2=await sb.from('wh_orders').update({status:s.value}).eq('id',+s.dataset.st);if(r2.error)return fail(r2.error);list.filter(function(o){return o.id===+s.dataset.st})[0].status=s.value;toast('Status set to '+s.value)};
+  $('#otable').onclick=function(e){var b=e.target.closest('[data-view]');if(!b)return;var o=list.filter(function(x){return x.id===+b.dataset.view})[0];
+    var m=document.createElement('div');m.className='modal';m.innerHTML='<div class="panel"><h3>Order '+esc(o.number)+'</h3><div class="card"><h3>Customer</h3><div>'+esc(o.name)+'<br>'+esc(o.phone)+'<br>'+esc(o.address)+'<br>'+esc(o.city)+' '+esc(o.pincode)+'</div></div><div class="card order-items"><h3>Items</h3>'+o.items.map(function(i){return '<div><span>'+esc(i.title)+' · '+esc(i.size)+' × '+i.qty+'</span><b style="font-weight:500">'+inr(i.price*i.qty)+'</b></div>'}).join('')+'<div><span>Subtotal</span><span>'+inr(o.subtotal)+'</span></div>'+(o.discount?'<div><span>Coupon '+esc(o.coupon)+'</span><span>−'+inr(o.discount)+'</span></div>':'')+(o.fee?'<div><span>COD fee</span><span>'+inr(o.fee)+'</span></div>':'')+'<div><b>Total</b><b>'+inr(o.total)+'</b></div></div><label>Internal note<textarea id="onote">'+esc(o.note)+'</textarea></label><div class="foot"><button class="btn ghost" data-x>Close</button><button class="btn" id="osave">Save note</button></div></div>';
+    document.body.appendChild(m);m.onclick=function(e){if(e.target===m||e.target.closest('[data-x]'))m.remove()};
+    $('#osave',m).onclick=async function(){var r3=await sb.from('wh_orders').update({note:$('#onote',m).value}).eq('id',o.id);if(r3.error)return fail(r3.error);o.note=$('#onote',m).value;toast('Saved');m.remove()}};
+  $('#ocsv').onclick=function(){var rows=[['Order','Date','Name','Phone','Address','City','Pincode','Payment','Items','Subtotal','Coupon','Discount','Fee','Total','Status']].concat(list.map(function(o){return [o.number,o.created_at,o.name,o.phone,o.address,o.city,o.pincode,o.payment,o.items.map(function(i){return i.title+' ('+i.size+') x'+i.qty}).join('; '),o.subtotal,o.coupon||'',o.discount,o.fee,o.total,o.status]}));
+    var csv=rows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"'}).join(',')}).join('\n');var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='wildhunk-orders.csv';a.click()};
+};
+
+// ---------- Coupons ----------
+VIEWS.coupons=async function(){
+  var r=await sb.from('wh_coupons').select('*').order('created_at',{ascending:false});if(r.error)throw r.error;var list=r.data;
+  main.innerHTML='<div class="top"><h2>Coupons and discounts</h2><div class="acts"><button class="btn" id="addC">New coupon</button></div></div><p class="hint" style="margin:0 0 14px">Customers type these codes at checkout. Product-level discounts are set with the price and MRP on each product, or with Bulk price change.</p><div class="tablewrap"><table id="ctable"></table></div>';
+  function desc(c){return (c.kind==='percent'?c.value+'% off':inr(c.value)+' off')+(c.max_discount?' (max '+inr(c.max_discount)+')':'')+(c.min_order?' on orders above '+inr(c.min_order):'')}
+  function state(c){var n=Date.now();if(!c.active)return '<span class="pill off">Off</span>';if(c.ends_at&&new Date(c.ends_at)<n)return '<span class="pill off">Expired</span>';if(c.starts_at&&new Date(c.starts_at)>n)return '<span class="pill">Scheduled</span>';if(c.usage_limit&&c.used>=c.usage_limit)return '<span class="pill off">Used up</span>';return '<span class="pill on">Active</span>'}
+  $('#ctable').innerHTML='<tr><th>Code</th><th>Discount</th><th class="hide-m">Used</th><th class="hide-m">Valid until</th><th class="hide-m">On store</th><th>Status</th><th></th></tr>'+(list.length?list.map(function(c){return '<tr><td><b style="font-weight:500;letter-spacing:.05em">'+esc(c.code)+'</b></td><td>'+desc(c)+'</td><td class="hide-m">'+c.used+(c.usage_limit?' / '+c.usage_limit:'')+'</td><td class="hide-m">'+(c.ends_at?new Date(c.ends_at).toLocaleDateString('en-IN'):'No end date')+'</td><td class="hide-m">'+(c.show_on_site?'Shown':'Hidden')+'</td><td>'+state(c)+'</td><td style="white-space:nowrap"><button class="btn sm ghost" data-ed="'+esc(c.code)+'">Edit</button> <button class="btn sm danger" data-del="'+esc(c.code)+'">Delete</button></td></tr>'}).join(''):'<tr><td colspan="7" class="empty">No coupons yet.</td></tr>');
+  $('#addC').onclick=function(){editCoupon(null)};
+  $('#ctable').onclick=async function(e){var b=e.target.closest('button');if(!b)return;var c=list.filter(function(x){return x.code===(b.dataset.ed||b.dataset.del)})[0];
+    if(b.dataset.ed)editCoupon(c);else if(confirm('Delete coupon '+c.code+'?')){var r2=await sb.from('wh_coupons').delete().eq('code',c.code);if(r2.error)return fail(r2.error);toast('Deleted');VIEWS.coupons()}};
+};
+function dt(v){if(!v)return '';var d=new Date(v);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
+function editCoupon(c){var isNew=!c;c=c||{code:'',kind:'percent',value:10,min_order:0,max_discount:null,starts_at:null,ends_at:null,usage_limit:null,active:true,note:'',title:'',show_on_site:true};
+  var m=document.createElement('div');m.className='modal';m.innerHTML='<div class="panel"><h3>'+(isNew?'New coupon':'Edit '+esc(c.code))+'</h3><form id="cf">'+
+   '<label>Code<input id="c-code" required pattern="[A-Za-z0-9_-]{3,30}" value="'+esc(c.code)+'"'+(isNew?'':' readonly')+' style="text-transform:uppercase" placeholder="WILD20"></label>'+
+   '<div class="grid2"><label>Type<select id="c-kind"><option value="percent"'+(c.kind==='percent'?' selected':'')+'>Percent off</option><option value="flat"'+(c.kind==='flat'?' selected':'')+'>Flat ₹ off</option></select></label><label>Value<input id="c-val" type="number" min="1" required value="'+c.value+'"></label></div>'+
+   '<div class="grid2"><label>Minimum order (₹)<input id="c-min" type="number" min="0" value="'+c.min_order+'"></label><label>Maximum discount (₹, optional)<input id="c-max" type="number" min="0" value="'+(c.max_discount||'')+'"></label></div>'+
+   '<div class="grid2"><label>Starts (optional)<input id="c-start" type="datetime-local" value="'+dt(c.starts_at)+'"></label><label>Ends (optional)<input id="c-end" type="datetime-local" value="'+dt(c.ends_at)+'"></label></div>'+
+   '<div class="grid2"><label>Total uses allowed (optional)<input id="c-lim" type="number" min="1" value="'+(c.usage_limit||'')+'"></label><label>Status<select id="c-act"><option value="1"'+(c.active?' selected':'')+'>On</option><option value="0"'+(!c.active?' selected':'')+'>Off</option></select></label></div>'+
+   '<label>Message shown when applied<input id="c-note" value="'+esc(c.note)+'" placeholder="20% off applied"></label>'+
+   '<label class="chk" style="margin-bottom:12px"><input type="checkbox" id="c-show"'+(c.show_on_site!==false?' checked':'')+'> Show this offer on the store (home page, product pages and checkout)</label>'+
+   '<label>Headline on the store (optional)<input id="c-title" value="'+esc(c.title||'')+'" placeholder="Leave empty to show e.g. FLAT ₹200 OFF"></label>'+
+   '<div class="foot"><button type="button" class="btn ghost" data-x>Cancel</button><button class="btn">'+(isNew?'Create coupon':'Save')+'</button></div></form></div>';
+  document.body.appendChild(m);m.onclick=function(e){if(e.target===m||e.target.closest('[data-x]'))m.remove()};
+  $('#cf',m).onsubmit=async function(e){e.preventDefault();var row={code:$('#c-code',m).value.trim().toUpperCase(),kind:$('#c-kind',m).value,value:+$('#c-val',m).value,min_order:+$('#c-min',m).value||0,max_discount:+$('#c-max',m).value||null,
+    starts_at:$('#c-start',m).value?new Date($('#c-start',m).value).toISOString():null,ends_at:$('#c-end',m).value?new Date($('#c-end',m).value).toISOString():null,usage_limit:+$('#c-lim',m).value||null,active:$('#c-act',m).value==='1',note:$('#c-note',m).value.trim(),show_on_site:$('#c-show',m).checked,title:$('#c-title',m).value.trim()};
+    if(row.kind==='percent'&&row.value>90){toast('Percent off must be 90 or less',true);return}
+    var r=isNew?await sb.from('wh_coupons').insert(row):await sb.from('wh_coupons').update(row).eq('code',c.code);if(r.error)return fail(r.error.code==='23505'?{message:'That code already exists'}:r.error);toast('Saved');m.remove();VIEWS.coupons()};
+}
+
+// ---------- Homepage ----------
+function imgField(id,val,label){return '<div class="thumbpick"><img id="'+id+'-pv" src="'+esc(imgUrl(val))+'" alt="" onerror="this.style.opacity=.2"><div class="tp"><label>'+label+'<input id="'+id+'" value="'+esc(val||'')+'"></label><button type="button" class="btn sm ghost" data-upl="'+id+'">Upload image</button></div></div>'}
+function wireImgFields(root,folder,max){root.addEventListener('click',async function(e){var b=e.target.closest('[data-upl]');if(!b)return;var fs=await pickFiles(false);if(!fs.length)return;try{var u=(await uploadFiles(fs,folder,max))[0];var inp=root.querySelector('#'+b.dataset.upl);inp.value=u;inp.dispatchEvent(new Event('input',{bubbles:true}))}catch(err){fail(err)}});
+  root.addEventListener('input',function(e){if(e.target.id&&root.querySelector('#'+e.target.id+'-pv'))root.querySelector('#'+e.target.id+'-pv').src=e.target.value})}
+function listEditor(title,key,fields,blank,hint){
+  var items=JSON.parse(JSON.stringify(settings[key]||[]));
+  main.innerHTML='<div class="top"><h2>'+title+'</h2><div class="acts"><button class="btn ghost" id="le-add">Add</button><button class="btn" id="le-save">Save</button></div></div>'+(hint?'<p class="hint" style="margin:0 0 14px">'+hint+'</p>':'')+'<div id="le"></div>';
+  function draw(){$('#le').innerHTML=items.map(function(it,k){return '<div class="rowitem" data-k="'+k+'"><div class="mv"><button class="btn sm ghost" data-up="'+k+'">↑</button><button class="btn sm ghost" data-dn="'+k+'">↓</button></div><button class="btn sm danger rm" data-rm="'+k+'">Remove</button><div style="font-size:12px;color:var(--muted);margin-bottom:8px">#'+(k+1)+'</div>'+fields.map(function(f){var id='le-'+k+'-'+f[0],v=it[f[0]]==null?'':it[f[0]];
+      if(f[2]==='img')return imgField(id,v,f[1]);if(f[2]==='area')return '<label>'+f[1]+'<textarea id="'+id+'" rows="2">'+esc(v)+'</textarea></label>';return '<label>'+f[1]+'<input id="'+id+'" type="'+(f[2]||'text')+'" value="'+esc(v)+'"></label>'}).join('')+'</div>'}).join('')||'<div class="empty">Nothing here yet. Use Add.</div>'}
+  function read(){items.forEach(function(it,k){fields.forEach(function(f){var el=$('#le-'+k+'-'+f[0]);if(el)it[f[0]]=f[2]==='number'?+el.value:el.value})})}
+  draw();wireImgFields($('#le'),key,1600);
+  $('#le').addEventListener('click',function(e){var b=e.target.closest('button');if(!b||b.dataset.upl)return;read();var k;
+    if(b.dataset.rm!=null){if(!confirm('Remove this item?'))return;items.splice(+b.dataset.rm,1)}else if(b.dataset.up!=null){k=+b.dataset.up;if(k>0)items.splice(k-1,0,items.splice(k,1)[0])}else if(b.dataset.dn!=null){k=+b.dataset.dn;if(k<items.length-1)items.splice(k+1,0,items.splice(k,1)[0])}draw()});
+  $('#le-add').onclick=function(){read();items.push(JSON.parse(JSON.stringify(blank)));draw()};
+  $('#le-save').onclick=function(){read();saveSetting(key,items).catch(fail)};
+}
+VIEWS.home=async function(){
+  main.innerHTML='<div class="top"><h2>Homepage</h2></div><div class="stats" id="hs"></div>';
+  [['hero','Hero slides','The big rotating banners at the top'],['collections','Shop by collection','The four collection tiles'],['budgets','Shop by budget','Price-point tiles like "Tees under ₹499"']].forEach(function(x){var d=document.createElement('button');d.className='stat';d.style.cssText='text-align:left;cursor:pointer';d.innerHTML='<small>'+x[1]+'</small><b style="font-size:15px">'+(settings[x[0]]||[]).length+' items</b><div class="hint" style="margin:6px 0 0">'+x[2]+'</div>';d.onclick=function(){location.hash='home-'+x[0]};$('#hs').appendChild(d)});
+};
+VIEWS['home-hero']=async function(){listEditor('Hero slides','hero',[['image','Background image (wide, at least 1600px)','img'],['tag','Small label above the heading'],['title','Heading (use a new line to break it)','area'],['text','Text','area'],['cta','Button text'],['link','Button link (for example #t-shirts or #p-12)']],{image:'',tag:'',title:'',text:'',cta:'Shop now',link:'#new-arrivals'},'Slides rotate every 5 seconds. Order here is the order on the site.')};
+VIEWS['home-collections']=async function(){listEditor('Shop by collection','collections',[['image','Tile image','img'],['label','Label'],['link','Link (for example #winter-edit or #c-shirts)']],{image:'',label:'',link:'#new-arrivals'})};
+VIEWS['home-budgets']=async function(){listEditor('Shop by budget','budgets',[['image','Tile image','img'],['label','Label (for example Tees Under)'],['price','Price (₹)',  'number'],['link','Link (for example #tees-under-499)']],{image:'',label:'',price:999,link:'#all'},'A link like #tees-under-499 shows tees priced up to ₹499. #shirts-under-799 works the same way.')};
+VIEWS.faqs=async function(){
+  var items=(settings.faqs||[]).map(function(x){return {q:x[0],a:x[1]}});settings._faqs=items;
+  listEditor('FAQs','_faqs',[['q','Question'],['a','Answer','area']],{q:'',a:''});
+  $('#le-save').onclick=function(){$$('#le .rowitem').forEach(function(r,k){items[k].q=$('#le-'+k+'-q').value;items[k].a=$('#le-'+k+'-a').value});saveSetting('faqs',items.filter(function(x){return x.q}).map(function(x){return [x.q,x.a]})).catch(fail)};
+};
+
+// ---------- Store settings ----------
+VIEWS.store=async function(){
+  var s=JSON.parse(JSON.stringify(settings.store||{}));s.announcement=s.announcement||{};s.social=s.social||{};s.trust=s.trust||['','','',''];
+  function f(id,label,val,type){return '<label>'+label+'<input id="'+id+'" type="'+(type||'text')+'" value="'+esc(val==null?'':val)+'"></label>'}
+  main.innerHTML='<div class="top"><h2>Store settings</h2><div class="acts"><button class="btn" id="ss">Save all</button></div></div>'+
+   '<div class="card"><h3>Announcement bar</h3><label class="chk"><input type="checkbox" id="an-on"'+(s.announcement.on?' checked':'')+'> Show a strip above the header</label>'+f('an-text','Text',s.announcement.text)+f('an-link','Link (optional)',s.announcement.link)+'</div>'+
+   '<div class="card"><h3>Delivery and payment</h3><div class="grid2">'+f('st-free','Free delivery above (₹)',s.free_shipping_min,'number')+f('st-cod','Cash on delivery fee (₹)',s.cod_fee,'number')+'</div></div>'+
+   '<div class="card"><h3>Offers and messages</h3>'+f('st-offer','Offer box on every product page',s.offer_text)+f('st-rew','Rewards button message',s.rewards_text)+'</div>'+
+   '<div class="card"><h3>Trust bar</h3><div class="grid2">'+f('st-rs','Rating score',s.rating_score)+f('st-rt','Rating text',s.rating_text)+'</div><div class="grid2">'+[0,1,2,3].map(function(k){return f('st-t'+k,'Point '+(k+1),s.trust[k])}).join('')+'</div></div>'+
+   '<div class="card"><h3>Footer and contact</h3><label>About text<textarea id="st-about">'+esc(s.footer_about)+'</textarea></label>'+f('st-addr','Registered address',s.address)+'<div class="grid2">'+f('st-email','Support email',s.contact_email,'email')+f('st-phone','Support phone',s.contact_phone)+'</div><div class="grid3">'+f('so-ig','Instagram link',s.social.instagram)+f('so-yt','YouTube link',s.social.youtube)+f('so-fb','Facebook link',s.social.facebook)+'</div></div>';
+  $('#ss').onclick=function(){var v=function(id){return $('#'+id).value.trim()};
+    s.announcement={on:$('#an-on').checked,text:v('an-text'),link:v('an-link')};s.free_shipping_min=+v('st-free')||0;s.cod_fee=+v('st-cod')||0;s.offer_text=v('st-offer');s.rewards_text=v('st-rew');s.rating_score=v('st-rs');s.rating_text=v('st-rt');
+    s.trust=[0,1,2,3].map(function(k){return v('st-t'+k)});s.footer_about=v('st-about');s.address=v('st-addr');s.contact_email=v('st-email');s.contact_phone=v('st-phone');s.social={instagram:v('so-ig'),youtube:v('so-yt'),facebook:v('so-fb')};
+    saveSetting('store',s).catch(fail)};
+};
+
+// ---------- Media ----------
+VIEWS.media=async function(){
+  main.innerHTML='<div class="top"><h2>Image library</h2><div class="acts"><button class="btn" id="mu">Upload images</button></div></div><p class="hint" style="margin:0 0 14px">Every image you upload is kept here. Copy a link to use it anywhere in the admin.</p><div class="media" id="mg"></div>';
+  var folders=['products','hero','collections','budgets','uploads'],files=[];
+  for(var i=0;i<folders.length;i++){var r=await sb.storage.from(C.bucket).list(folders[i],{limit:500,sortBy:{column:'created_at',order:'desc'}});if(r.error)throw r.error;r.data.filter(function(x){return x.id}).forEach(function(x){files.push({path:folders[i]+'/'+x.name,at:x.created_at})})}
+  files.sort(function(a,b){return a.at<b.at?1:-1});
+  $('#mg').innerHTML=files.length?files.map(function(f){var u=sb.storage.from(C.bucket).getPublicUrl(f.path).data.publicUrl;return '<div class="m"><img src="'+esc(u)+'" loading="lazy" alt=""><div><button class="btn sm ghost" data-copy="'+esc(u)+'">Copy link</button><button class="btn sm danger" data-del="'+esc(f.path)+'">✕</button></div></div>'}).join(''):'<div class="empty">No uploads yet. The original photos live with the site files (img/…) and still work.</div>';
+  $('#mg').onclick=async function(e){var b=e.target.closest('button');if(!b)return;if(b.dataset.copy){navigator.clipboard.writeText(b.dataset.copy).then(function(){toast('Link copied')})}else if(confirm('Delete this image? Anything still using it will show a blank.')){var r2=await sb.storage.from(C.bucket).remove([b.dataset.del]);if(r2.error)return fail(r2.error);VIEWS.media()}};
+  $('#mu').onclick=async function(){var fs=await pickFiles(true);if(!fs.length)return;try{await uploadFiles(fs,'uploads',1600);VIEWS.media()}catch(err){fail(err)}};
+};
+
+// ---------- Admins ----------
+VIEWS.admins=async function(){
+  var r=await sb.from('wh_admins').select('*').order('created_at');if(r.error)throw r.error;
+  main.innerHTML='<div class="top"><h2>Admins</h2></div><div class="card"><h3>People who can open this panel</h3><div class="tablewrap"><table><tr><th>Email</th><th>Added</th><th></th></tr>'+r.data.map(function(a){return '<tr><td>'+esc(a.email)+(a.user_id===user.id?' <span class="pill">you</span>':'')+'</td><td>'+new Date(a.created_at).toLocaleDateString('en-IN')+'</td><td>'+(a.user_id===user.id?'':'<button class="btn sm danger" data-rm="'+a.user_id+'">Remove</button>')+'</td></tr>'}).join('')+'</table></div></div>'+
+   '<div class="card"><h3>Add an admin</h3><p class="hint" style="margin:0 0 12px">Ask them to open this page and use "Create the owner account" first, then add their email here.</p><form id="aa" style="display:flex;gap:8px;flex-wrap:wrap"><input id="aa-email" type="email" required placeholder="name@example.com" style="flex:1;min-width:200px"><button class="btn">Add admin</button></form></div>';
+  $('#aa').onsubmit=async function(e){e.preventDefault();var r2=await sb.rpc('wh_add_admin',{p_email:$('#aa-email').value.trim()});if(r2.error)return fail(r2.error);if(!r2.data)return toast('No account with that email yet. Ask them to sign up first.',true);toast('Admin added');VIEWS.admins()};
+  main.onclick=async function(e){var b=e.target.closest('[data-rm]');if(!b)return;if(!confirm('Remove this admin?'))return;var r3=await sb.from('wh_admins').delete().eq('user_id',b.dataset.rm);if(r3.error)return fail(r3.error);VIEWS.admins()};
+};
+})();
+</script>
+</body>
+</html>
