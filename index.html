@@ -264,7 +264,7 @@ async function boot(){
     if(st.data.has_admin){$('#claimTitle').textContent='No admin access';$('#claimText').textContent='You are signed in as '+user.email+', but this account is not a store admin. Ask the store owner to add you under Admins.';$('#claimBtn').classList.add('hidden')}
     else{$('#claimBtn').classList.remove('hidden')}
     return}
-  $('#meEmail').textContent=user.email;showOnly('appView');pwNudge();await loadSettings();go(location.hash.slice(1)||'dash');
+  $('#meEmail').textContent=user.email;showOnly('appView');await loadSettings();go(location.hash.slice(1)||'dash');
 }
 var booted=false,denied=false;
 sb.auth.onAuthStateChange(function(ev,session){
