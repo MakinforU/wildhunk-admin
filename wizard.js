@@ -44,6 +44,7 @@ var CSS='.wz{position:fixed;inset:0;z-index:60;background:var(--bg,#f6f2ec);disp
 '.wz-src{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px}@media (pointer:coarse){.wz-drop:not(.has){display:none}.wz-src .btn{padding:18px 16px;font-size:16px}}.wz-src .btn{flex:1;min-width:150px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 16px}'+
 '.wz-src svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}'+
 '.wz-camm{position:fixed;inset:0;z-index:70;background:rgba(15,11,9,.92);display:grid;place-items:center;padding:16px}.wz-cambox{width:min(720px,100%)}.wz-cambox video{width:100%;max-height:70vh;background:#000;display:block}'+
+'.wz-camerr{background:#fffdf9;padding:20px;color:#16110e}.wz-camerr p{margin:8px 0 0;font-size:14px;line-height:1.5}.wz-camacts .btn[disabled]{opacity:.6}'+
 '.wz-camacts{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}.wz-camacts .btn.ghost{color:#fff;border-color:#fff}.wz-camacts .btn:not(.ghost){background:#fff;color:#16110e;border-color:#fff}'+
 '.wz-note{background:#fbf3e6;border-left:3px solid var(--accent,#a07a4f);padding:12px 14px;font-size:13.5px;margin:0 0 16px}'+
 '.wz-note.ok{background:#eaf3e7;border-color:#2f6b3d}'+
@@ -104,22 +105,28 @@ function open(o){
     var d=$('#wz-drop',body);
     function take(files){if(!files||!files.length)return;d.innerHTML='<div class="ph">Uploading…</div>';
       api.upload([files[0]],'products').then(function(u){S.photo=u[0];S.uploaded.push(u[0]);S.views={};step0();navDraw()}).catch(function(e){api.toast(e.message||'Upload failed',true);step0()})}
-    function pick(cam){var i=document.createElement('input');i.type='file';i.accept='image/*';if(cam)i.setAttribute('capture','environment');i.onchange=function(){take(i.files)};i.click()}
+    function pick(cam){var i=document.createElement('input');i.type='file';i.accept='image/*';if(cam)i.setAttribute('capture','environment');i.style.cssText='position:fixed;left:-9999px;opacity:0';document.body.appendChild(i);i.onchange=function(){take(i.files);i.remove()};i.click()}
     $('#wz-up',body).onclick=function(){pick(false)};
     $('#wz-cam',body).onclick=function(){var touch=matchMedia('(pointer:coarse)').matches;
       if(touch||!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia))return pick(true);
-      camera(function(f){take([f])},function(){pick(true)})};
+      camera(function(f){take([f])},function(){pick(false)})};
     d.onclick=function(){if(!S.photo)pick(false)};
     d.ondragover=function(e){e.preventDefault();d.classList.add('over')};d.ondragleave=function(){d.classList.remove('over')};
     d.ondrop=function(e){e.preventDefault();d.classList.remove('over');take(e.dataTransfer.files)}}
   // Live camera for laptops and desktops (phones use their own camera app)
   function camera(done,fallback){var m=document.createElement('div');m.className='wz-camm';
     m.innerHTML='<div class="wz-cambox"><video playsinline autoplay muted></video><div class="wz-camacts"><button class="btn ghost" data-c="x" type="button">Cancel</button><button class="btn" data-c="snap" type="button">Capture</button></div></div>';
-    el.appendChild(m);var v=$('video',m),stream=null;
+    document.body.appendChild(m);var v=$('video',m),stream=null,snap=$('[data-c="snap"]',m);snap.disabled=true;snap.textContent='Starting camera…';
     function stop(){if(stream)stream.getTracks().forEach(function(t){t.stop()});m.remove()}
-    navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1440}},audio:false}).then(function(st){stream=st;v.srcObject=st})
-      .catch(function(){stop();api.toast('Camera not available. Choose a photo instead.',true);fallback()});
-    m.onclick=function(e){var b=e.target.closest('[data-c]');if(!b)return;if(b.dataset.c==='x')return stop();
+    function fail(err){if(stream)stream.getTracks().forEach(function(t){t.stop()});var n=(err&&err.name)||'';
+      var why=/NotAllowed|Security/.test(n)?'Camera permission is blocked for this site. Click the camera icon in the address bar (or your browser settings), allow the camera, then try again.':
+        /NotFound|Overconstrained/.test(n)?'No camera was found on this device.':/NotReadable|Abort/.test(n)?'Another app is using the camera. Close it and try again.':'The camera could not start.';
+      $('.wz-cambox',m).innerHTML='<div class="wz-camerr"><b>Camera not available</b><p>'+why+'</p></div><div class="wz-camacts"><button class="btn ghost" data-c="x" type="button">Close</button><button class="btn" data-c="file" type="button">Choose a photo instead</button></div>'}
+    function start(c){return navigator.mediaDevices.getUserMedia({video:c,audio:false})}
+    start({facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1440}}).catch(function(e){if(/NotAllowed|Security/.test(e&&e.name))throw e;return start(true)})
+      .then(function(st){stream=st;v.srcObject=st;var go=function(){snap.disabled=false;snap.textContent='Capture'};v.onloadedmetadata=function(){var p=v.play();if(p&&p.catch)p.catch(function(){});go()};if(v.readyState>=1)go()})
+      .catch(fail);
+    m.onclick=function(e){var b=e.target.closest('[data-c]');if(!b)return;if(b.dataset.c==='x')return stop();if(b.dataset.c==='file'){stop();return fallback()}
       if(!v.videoWidth)return;var c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);
       c.toBlob(function(bl){stop();if(bl)done(new File([bl],'camera-'+Date.now()+'.jpg',{type:'image/jpeg'}))},'image/jpeg',.92)}}
 
