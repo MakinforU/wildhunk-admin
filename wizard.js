@@ -44,6 +44,7 @@ var CSS='.wz{position:fixed;inset:0;z-index:60;background:var(--bg,#f6f2ec);disp
 '.wz-src{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px}@media (pointer:coarse){.wz-drop:not(.has){display:none}.wz-src .btn{padding:18px 16px;font-size:16px}}.wz-src .btn{flex:1;min-width:150px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 16px}'+
 '.wz-src svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}'+
 '.wz-camm{position:fixed;inset:0;z-index:70;background:rgba(15,11,9,.92);display:grid;place-items:center;padding:16px}.wz-cambox{width:min(720px,100%)}.wz-cambox video{width:100%;max-height:70vh;background:#000;display:block}'+
+'.wz-note.wz-err{background:#fbeceb;border-color:#e3b4ae;color:#7a2a20}'+
 '.wz-camerr{background:#fffdf9;padding:20px;color:#16110e}.wz-camerr p{margin:8px 0 0;font-size:14px;line-height:1.5}.wz-camacts .btn[disabled]{opacity:.6}'+
 '.wz-camacts{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}.wz-camacts .btn.ghost{color:#fff;border-color:#fff}.wz-camacts .btn:not(.ghost){background:#fff;color:#16110e;border-color:#fff}'+
 '.wz-note{background:#fbf3e6;border-left:3px solid var(--accent,#a07a4f);padding:12px 14px;font-size:13.5px;margin:0 0 16px}'+
@@ -76,6 +77,14 @@ function open(o){
   var body=$('.wz-in',el);
   function close(){el.remove();document.body.style.overflow=''}
   $('.wz-x',el).onclick=function(){if(S.step<6&&(S.photo||S.title)&&!confirm('Close without saving? Your changes will be lost.'))return;close()};
+  function aiMsg(m){m=String(m||'');
+    if(/outstanding balance|billing|payment/i.test(m))return 'Your Google AI Studio billing has an unpaid balance, so Google is refusing AI requests. Pay it at aistudio.google.com/billing, then tap Generate again. Meanwhile you can upload the angles yourself.';
+    if(/free_tier|quota|exhausted|rate/i.test(m))return 'The Gemini usage limit was reached. Wait a few minutes and try again, or check billing in Google AI Studio.';
+    if(/limit reached|Too many AI/i.test(m))return m;
+    if(/API key|PERMISSION_DENIED|invalid/i.test(m))return 'The Gemini key was rejected. It may have been deleted or rotated. Save a new key as GEMINI_API_KEY in Supabase.';
+    if(/high demand|overloaded|unavailable|503/i.test(m))return 'Google\'s AI is busy right now. Try again in a minute.';
+    if(/could not be reached|Failed to fetch|network/i.test(m))return 'The AI service could not be reached. Check your connection and try again.';
+    return m||'Something went wrong. Try again, or upload the angles yourself.'}
   function isDemo(k){return !!(S.aiDemo&&S.demoT&&S.demoT[k]!=null)}
   function picked(){return VIEWS.map(function(v){return isDemo(v[0])?null:S.views[v[0]]}).filter(Boolean)}
   function images(){var a=picked();return a.length?a:(S.photo?[S.photo]:[])}
@@ -135,14 +144,14 @@ function open(o){
     body.innerHTML='<h3>Five angles for the product page</h3><p class="wz-lead">Generate front, back, both sides and a close-up from your photo. Keep the ones you like, regenerate the rest, or upload your own.</p>'+
       '<div id="wz-ainote"></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px"><button class="btn" id="wz-gen">Generate all 5 views</button><button class="btn ghost" id="wz-usephoto">Use my photo as the front</button></div>'+
       '<div class="wz-views" id="wz-views"></div><p class="hint" style="margin-top:14px">Only the views you keep go on the store, in this order. You can skip this step and use just your photo.</p>';
-    function note(){var n=$('#wz-ainote',body);if(S.aiReady===false)n.innerHTML='<div class="wz-note">AI image generation isn\'t switched on yet. It needs a Gemini or OpenAI key, which we add on the server so it stays private. Until then, upload each angle yourself with the Upload buttons.</div>';
+    function note(){var n=$('#wz-ainote',body);if(S.aiErr){n.innerHTML='<div class="wz-note wz-err" role="alert"><b>AI photos failed.</b> '+esc(S.aiErr)+'</div>';return}if(S.aiReady===false)n.innerHTML='<div class="wz-note">AI image generation isn\'t switched on yet. It needs a Gemini or OpenAI key, which we add on the server so it stays private. Until then, upload each angle yourself with the Upload buttons.</div>';
       else if(S.aiDemo)n.innerHTML='<div class="wz-note">Preview only: nothing is generated here. In the live admin, each tile becomes a new studio photo of your garment on a clean background, with the shop and clutter removed. Tip: upload a real back photo for the most accurate back view.</div>';else n.innerHTML=''}
     function draw(){$('#wz-views',body).innerHTML=VIEWS.map(function(v){var u=S.views[v[0]],l=S.loading&&S.loading[v[0]];
       return '<div class="wz-v'+(u?' chosen':'')+'"><div class="im">'+(u&&isDemo(v[0])?'<img src="'+esc(u)+'" alt="" style="filter:blur(3px) grayscale(.6) brightness(.55);transform:scale(1.08)"><div class="wz-ph"><b>'+v[1]+'</b>AI studio photo appears here</div>':u?'<img src="'+esc(u)+'" alt="'+v[1]+' view">':'<span style="color:#a59a8d;font-size:12px">No image yet</span>')+(l?'<div class="ld">Generating…</div>':'')+'</div>'+
         '<div class="lb">'+v[1]+(u&&!isDemo(v[0])?'<span class="ok">✓ kept</span>':'')+'</div><div class="ac"><button data-gen="'+v[0]+'">'+(u?'Regenerate':'Generate')+'</button><button data-up="'+v[0]+'">Upload</button>'+(u?'<button data-rm="'+v[0]+'">Remove</button>':'')+'</div></div>'}).join('');note()}
     function gen(keys){S.loading=S.loading||{};keys.forEach(function(k){S.loading[k]=1});draw();
-      return api.ai('views',{image:S.photo,views:keys,title:S.title}).then(function(r){S.aiReady=true;S.aiDemo=!!r.demo;S.demoT=r.styles||null;keys.forEach(function(k){if(r.images&&r.images[k]){S.views[k]=r.images[k];if(!r.demo)S.uploaded.push(r.images[k])}delete S.loading[k]});draw()})
-        .catch(function(e){keys.forEach(function(k){delete S.loading[k]});if(e&&e.code==='no_key')S.aiReady=false;else api.toast((e&&e.message)||'Could not generate',true);draw()})}
+      return api.ai('views',{image:S.photo,views:keys,title:S.title}).then(function(r){S.aiReady=true;S.aiErr=null;S.aiDemo=!!r.demo;S.demoT=r.styles||null;var errs=r.errors||{},miss=keys.filter(function(k){return !(r.images&&r.images[k])});if(miss.length)S.aiErr=miss.length+' of '+keys.length+' views did not come out ('+aiMsg(errs[miss[0]]||'')+'). Tap Generate on those tiles to try again, or upload them yourself.';keys.forEach(function(k){if(r.images&&r.images[k]){S.views[k]=r.images[k];if(!r.demo)S.uploaded.push(r.images[k])}delete S.loading[k]});draw();if(S.aiErr){var n=$('#wz-ainote',body);if(n&&n.scrollIntoView)n.scrollIntoView({behavior:'smooth',block:'center'})}})
+        .catch(function(e){keys.forEach(function(k){delete S.loading[k]});if(e&&e.code==='no_key')S.aiReady=false;else{S.aiErr=aiMsg(e&&e.message);api.toast('AI photos failed. See the message above the tiles.',true)}draw();var n=$('#wz-ainote',body);if(n&&n.scrollIntoView)n.scrollIntoView({behavior:'smooth',block:'center'})})}
     $('#wz-gen',body).onclick=function(){gen(VIEWS.map(function(v){return v[0]}))};
     $('#wz-usephoto',body).onclick=function(){S.views.front=S.photo;draw()};
     $('#wz-views',body).onclick=function(e){var b=e.target.closest('button');if(!b)return;
